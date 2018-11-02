@@ -1,0 +1,114 @@
+<template id="app-card">
+    <style>
+    #xcard {
+        border-radius: 8px;
+        height: 100px;
+        border: solid 1px #cccdd2;
+        background-color: white;
+        padding: 10%;
+        margin: 10% 2%;
+    }
+
+    #top-column {
+        padding: 5px;
+    }
+
+    .app-card-title {
+        display: inline-block;
+        font-weight: bold;
+    }
+
+    #edition {
+        display: inline-block;
+        float: right;
+    }
+
+    button {
+        color: #444444;
+        background: #F3F3F3;
+        border: 1px #DADADA solid;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 9pt;
+        outline: none;
+    }
+
+    button:hover {
+        border: 1px #C6C6C6 solid;
+        box-shadow: 1px 1px 1px #EAEAEA;
+        color: #333333;
+        background: #F7F7F7;
+    }
+
+    button:active {
+        box-shadow: inset 1px 1px 1px #DFDFDF;   
+    }
+</style>
+<div id="xcard">
+    <div id="top-card">
+        <span class="app-card-title"></span>
+        <div id="edition">
+            <button class="delete">Delete</button>
+        </div>
+    </div>
+    <p class="app-card-description"></p>
+</div>
+</template>
+
+<script>
+    const currentDocumentCard = document.currentScript.ownerDocument;
+    
+    window.customElements.define('app-card', class extends HTMLElement {
+        constructor () {
+            super();
+            //clone the template and add it to the shadowDOM
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            
+            const template = currentDocumentCard.querySelector('#app-card');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+            
+            //get title and description attribute given by the column the card is in
+            this.shadowRoot.querySelector('.app-card-title').innerHTML = this.getAttribute('title');
+            this.shadowRoot.querySelector('.app-card-description').innerHTML = this.getAttribute('description');
+
+            //add event listener to the card itself so that the size changes on click (not working)
+            this.addEventListener('click', e => {
+                this.setAttribute('style', 'width: 350px ; height: 270px');
+            });
+            
+            // attach event listener to the delete button to delete the card
+            let deleteButton = this.shadowRoot.querySelectorAll('.delete');
+            const id = this.getAttribute('id');
+            deleteButton.forEach(button => {
+                button.addEventListener('click', e => {
+                    this.deleteCard(id);
+                });
+            });
+        }
+        
+        //delete the card by its id
+        deleteCard(id) {
+            let url = 'http://localhost:' + APIPORT + '/cards/' + id;
+            fetch(url, {
+                method: 'delete'
+            })
+            .then(response => response.json());
+            window.location.reload(true);
+        }
+
+        //request to edit the title and the description of the card
+        editCard(id, title, description) {
+            let url = 'http://localhost:' + APIPORT + '/cards/' + id;
+            fetch(url, {
+                method: 'put',
+                body: JSON.stringify({'title': title, 'description': description}),
+                headers:{
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json());
+            window.location.reload(true);
+        }
+    });
+</script>

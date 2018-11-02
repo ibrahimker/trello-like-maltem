@@ -1,0 +1,152 @@
+<template id="add-card">
+    <style>
+    #addCard {
+        display: inline-block;
+        background-color: white;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        height: 40%;
+        width: 50%;
+        text-align: center;
+        position: absolute;
+        top: 25%;
+        left: 30%;
+    }
+
+    form {
+        text-align: left;
+        padding: 2% 5%;
+    }
+
+    button {
+        color: #444444;
+        background: #F3F3F3;
+        border: 1px #DADADA solid;
+        padding: 5px 10px;
+        border-radius: 2px;
+        font-weight: bold;
+        font-size: 9pt;
+        outline: none;
+    }
+
+    button:hover {
+        border: 1px #C6C6C6 solid;
+        box-shadow: 1px 1px 1px #EAEAEA;
+        color: #333333;
+        background: #F7F7F7;
+    }
+
+    button:active {
+        box-shadow: inset 1px 1px 1px #DFDFDF;   
+    }
+
+    div {
+        position: relative;
+        margin: top;
+    }
+    #divCardId {
+        position: relative;
+        margin-top: 5px;
+    }
+    #description {
+        position: relative;
+        margin-top: 5px;
+    }
+    #okTitle {
+        position: relative;
+        margin-top: 5px;
+    }
+
+    #addCardTitle {
+        font-weight: bold;
+    }
+</style>
+<div id="addCard">
+    <p id="addCardTitle">Add new card</p>
+    <form>
+        <div id="divTitle" class="in">
+            <label for="title">Title</label>
+            <input type="text" id="title" name="title" />
+        </div>
+        <div id="divDescription">
+            <label for="description">Description</label>
+            <input type="text" id="description" name="description" />
+        </div>
+        <div id="divCardId">
+            Column ID
+            <select id="selectCardId" name="selectCardId">
+            </select>
+        </div>
+        <button id="okTitle">ok</button>
+    </form>
+</div>
+</template>
+<script>
+    const currentDocumentAddCard = document.currentScript.ownerDocument;
+    
+    window.customElements.define('app-addcard', class extends HTMLElement {
+        constructor () {
+            super();
+            //clone the template to the shadowDom
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            
+            const template = currentDocumentAddCard.querySelector('#add-card');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+            
+            //get the id of the column to be rendered in the select form
+            fetch(`http://localhost:` + APIPORT + `/columns`)
+            .then((response) => response.text())
+            .then((responseText) => {
+                let data = JSON.parse(responseText);
+                for (var i = 0 ; i < data.length ; ++i) {
+                    this.shadowRoot.querySelector('#selectCardId').innerHTML += 
+                    '<option value="' + data[i].id + '">' + data[i].id + '</option>';
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+            
+            //add an event listener to the ok button
+            this.shadowRoot.querySelector('#okTitle').addEventListener('click', e => {
+                e.preventDefault();
+                this.addCard(this.shadowRoot.querySelector('#title').value,
+                    this.shadowRoot.querySelector('#description').value,
+                    this.shadowRoot.querySelector('#selectCardId').value);
+            });
+        }
+        
+        //add a new card to the db
+        addCard(title, description, id_column) {
+            const url = 'http://localhost:' + APIPORT + '/cards';
+            //check if title already exist
+            fetch(url)
+            .then((response) => response.text())
+            .then((responseText) => {
+                let data = JSON.parse(responseText);
+                for (let i = 0 ; i < data.length ; ++i){
+                    if (data[i].title == title) {
+                        alert('Title already exist');
+                        throw new Error("Title already exist");
+                    }
+                }
+                //post to the server
+                fetch(url, {
+                    method: 'post',
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'title': title, 'description': description, 'columnId': id_column})
+                }).then(res=>res.json())
+                .then(res => console.log(res));
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+            window.location.reload(true);
+        }
+    });
+
+</script>

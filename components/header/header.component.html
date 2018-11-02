@@ -1,0 +1,63 @@
+<template id="app-header">
+    <link rel="stylesheet" href="./components/header/header.component.css"></style>
+    <header>
+        <h1>Brello</h1> 
+        <div id="search">
+            <input type="text" id="search-input" placeholder="Search" />
+            <button id="ok-button">Search</button>
+            <button id="myBtn" onclick="openModalAddCard()">Add Card</button>
+            <button id="myBtn" onclick="openModalAddColumn()">Add Column</button>
+            
+        </div>
+    </div>       
+</header>
+</template>
+
+<script>
+    const currentDocument = document.currentScript.ownerDocument;
+
+    window.customElements.define('app-header', class extends HTMLElement {
+        constructor () {
+            super();
+            const shadowRoot = this.attachShadow({mode: 'open'});
+
+            const template = currentDocument.querySelector('#app-header');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+        }
+    });
+
+    var modalColumn;
+    var modalCard;
+
+    window.onload = function(){
+        modalColumn = document.getElementById('modal-addcolumn');
+        modalCard = document.getElementById('modal-addcard');
+    }    
+
+    function openModalAddCard(){
+        document.getElementById('modal-addcard').style.display = "block";
+    }
+
+    function openModalAddColumn(){
+        document.getElementById('modal-addcolumn').style.display = "block";
+    }
+
+    function closeModalCard(){
+        document.getElementById('modal-addcard').style.display = "none";
+    }
+
+    function closeModalColumn(){
+        document.getElementById('modal-addcolumn').style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('modal-addcolumn')) {
+            document.getElementById('modal-addcolumn').style.display = "none";
+        }
+
+        if (event.target == document.getElementById('modal-addcard')) {
+            document.getElementById('modal-addcard').style.display = "none";
+        }
+    }
+</script>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Brello</title>
+
+    <link rel="stylesheet" type="text/css" href="style/style.css">
+
+    <link rel="import" href="./components/header/header.component.html">
+    <link rel="import" href="./components/wrapper/wrapper.component.html">
+    <link rel="import" href="./components/column/column.component.html">
+    <link rel="import" href="./components/card/card.component.html">
+    <link rel="import" href="./components/addcolumn/addcolumn.component.html">
+    <link rel="import" href="./components/editcolumn/editcolumn.component.html">
+    <link rel="import" href="./components/addcard/addcard.component.html">
+
+    <script>
+            //set the port number of the api and web server.
+            const APIPORT = 3000;
+            const SERVERPORT = location.port;
+
+            window.onclick = function(event) {
+                if (event.target == document.getElementById('modal-addcolumn')) {
+                    document.getElementById('modal-addcolumn').style.display = "none";
+                }
+
+                if (event.target == document.getElementById('modal-addcard')) {
+                    document.getElementById('modal-addcard').style.display = "none";
+                }
+
+                if (event.target == document.getElementById('modal-editcolumn')) {
+                    document.getElementById('modal-editcolumn').style.display = "none";
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <app-header></app-header>
+        <app-wrapper></app-wrapper>
+        <div id="modal-addcolumn" class="modal">
+            <span class="close" onclick="closeModalColumn()">&times;</span>
+            <app-addcolumn></app-addcolumn>
+        </div>
+        <div id="modal-addcard" class="modal">
+            <span class="close" onclick="closeModalCard()">&times;</span>
+            <app-addcard></app-addcard>
+        </div>
+    </body>
+    </html>

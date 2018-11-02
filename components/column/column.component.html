@@ -1,0 +1,97 @@
+<template id="column">
+    <link href="components/column/column.component.css" rel="stylesheet"></link>
+    <div id="column">
+        <div id="top-column">
+            <div class="column-title" contentEditable="true"></div>
+            <div id="column-option"></div>
+        </div>
+        <div class="xcards"></div>
+    </div>
+</template>
+
+<script>
+    const currentDocumentColumn = document.currentScript.ownerDocument;
+    
+    function deleteColumn(id){
+        let url = 'http://localhost:' + APIPORT + '/columns/' + id;
+        fetch(url, {
+            method: 'delete'
+        })
+        .then(response => response.json());
+        window.location.reload(true);
+    }
+
+    function triggerEditColumn(id){
+        console.log(document.getElementById("column"))
+    }
+
+    function addCard(id) {
+        console.log(id)
+    }
+
+    window.onclick = function(event) {
+        console.log(event.target)
+        // if (event.target == document.getElementById('modal-addcolumn')) {
+        //     document.getElementById('modal-addcolumn').style.display = "none";
+        // }
+
+        // if (event.target == document.getElementById('modal-addcard')) {
+        //     document.getElementById('modal-addcard').style.display = "none";
+        // }
+    }
+    
+    window.customElements.define('app-column', class extends HTMLElement {
+        constructor () {
+            super();
+
+            //clone the template and add it to the shadowDOM
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            
+            const template = currentDocumentColumn.querySelector('#column');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+
+            //get attribute id given by the wrapper
+            const id = this.getAttribute('id');
+            
+            //get attribute titlefrom the wrapper and set it to the tag in the template
+            this.shadowRoot.querySelector('.column-title').innerHTML = this.getAttribute('title');
+            // this.shadowRoot.querySelector('#column-option').innerHTML += '<button class="edit" onclick=openModalEditColumn('+id+')>Edit</button><button class="delete" onclick=deleteColumn('+id+')>Delete</button>';
+            // this.shadowRoot.querySelector('#column-option').innerHTML += '<button class="delete" onclick=addCard('+id+')>Add Card</button><button class="delete" onclick=deleteColumn('+id+')>Delete</button>';
+            this.shadowRoot.querySelector('#column-option').innerHTML += '<button class="delete" onclick=deleteColumn('+id+')>Delete</button>';
+
+            // let titleText = this.shadowRoot.querySelectorAll('#column');
+            // titleText.forEach(title => {
+            //     let editActive = false;
+            //     title.addEventListener('click', e => {
+            //         editActive = (e.target.innerHTML != title.innerHTML) ? true : false
+            //         console.log(editActive)
+            //         if(editActive == false) { //save the edited result
+            //             console.log(title)
+            //         }
+            //     });
+            //     title.addEventListener('input', e => {
+            //         console.log(title.innerHTML)
+            //     });
+            // });
+            
+            //fetch all the cards from the db and render them
+            const url = 'http://localhost:' + APIPORT + '/cards'
+            fetch(url)
+            .then((response) => response.text())
+            .then((responseText) => {
+                let data = JSON.parse(responseText);
+                for (let i = 0 ; i < data.length ; ++i) {
+                    if (data[i].columnId == id) {
+                        this.shadowRoot.querySelector('#column').innerHTML += 
+                        '<app-card class="card" id="' + data[i].id + '" title="' + data[i].title + '" description="' + data[i].description + '"></column>';
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+            
+        }
+    });
+</script>

@@ -1,0 +1,77 @@
+<template id="app-wrapper">
+    
+    <style>
+    #wrapper {
+        width: 100%;
+        height: calc(100%);
+        display: table;
+        table-layout:fixed;
+    }
+    .column {
+        display: inline-block;
+        position: relative;
+        padding: 2%;
+        margin-top: 2%;
+    }
+    #addColumn {
+        color: #444444;
+        background: #F3F3F3;
+        border: 1px #DADADA solid;
+        padding: 5px 10px;
+        border-radius: 2px;
+        font-weight: bold;
+        font-size: 9pt;
+        outline: none;
+        position: relative;
+        margin-top: 5px;
+        margin-left: 5px;
+    }
+
+    #addColumn:hover {
+        border: 1px #C6C6C6 solid;
+        box-shadow: 1px 1px 1px #EAEAEA;
+        color: #333333;
+        background: #F7F7F7;
+    }
+
+    #addColumn:active {
+        box-shadow: inset 1px 1px 1px #DFDFDF;   
+    }
+    #column-wrapper {
+        display:block;
+    }
+</style>
+<div id="wrapper">
+    <div id="column-wrapper"></div>
+</div>
+</template>
+
+<script>
+    const currentDocumentWrapper = document.currentScript.ownerDocument;
+    
+    window.customElements.define('app-wrapper', class extends HTMLElement {
+        constructor () {
+            super();
+            //clone the template to the shadowDom
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            const template = currentDocumentWrapper.querySelector('#app-wrapper');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+            
+            //fetch all the columns from the server and render them
+            fetch(`http://localhost:` + APIPORT + `/columns`)
+            .then((response) => response.text())
+            .then((responseText) => {
+                let data = JSON.parse(responseText);
+                //loop through each column and add the desired value to the "column-wrapper" tag
+                for (var i = 0 ; i < data.length ; ++i) {
+                    this.shadowRoot.querySelector('#column-wrapper').innerHTML += 
+                    '<app-column class="column" title="' + data[i].title + '" id="' + data[i].id + '"></app-column>';
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        }
+    });
+</script>

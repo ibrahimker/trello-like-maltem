@@ -1,0 +1,100 @@
+<template id="add-column">
+    <style>
+    #addColumn {
+        display: inline-block;
+        background-color: white;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        border-radius: 5px;
+        height: 20%;
+        width: 30%;
+        text-align: center;
+        position: absolute;
+        top: 25%;
+        left: 40%;
+    }
+
+    button {
+        color: #444444;
+        background: #F3F3F3;
+        border: 1px #DADADA solid;
+        padding: 5px 10px;
+        border-radius: 2px;
+        font-weight: bold;
+        font-size: 9pt;
+        outline: none;
+    }
+
+    button:hover {
+        border: 1px #C6C6C6 solid;
+        box-shadow: 1px 1px 1px #EAEAEA;
+        color: #333333;
+        background: #F7F7F7;
+    }
+
+    button:active {
+        box-shadow: inset 1px 1px 1px #DFDFDF;   
+    }
+    #okTitle {
+        position: relative;
+        margin-top: 5px;
+    }
+</style>
+<div id="addColumn">
+    <p>Add new column</p>
+    <form>
+        <div id="divTitle">
+            <label for="title">Title</label>
+            <input type="text" name="title" id="title" />
+        </div>
+        <button id="okTitle">ok</button>
+    </form>
+</div>
+</template>
+<script>
+    const currentDocumentAddColumn = document.currentScript.ownerDocument;
+    
+    window.customElements.define('app-addcolumn', class extends HTMLElement {
+        constructor () {
+            super();
+            //clone the template to the shadowDom
+            const shadowRoot = this.attachShadow({mode: 'open'});
+            
+            const template = currentDocumentAddColumn.querySelector('#add-column');
+            const instance = template.content.cloneNode(true);
+            shadowRoot.appendChild(instance);
+            this.shadowRoot.querySelector('#okTitle').addEventListener('click', e => {
+                e.preventDefault();
+                this.addColumn(this.shadowRoot.querySelector('#title').value);
+            });
+        }
+        addColumn(title) {
+            const url = 'http://localhost:' + APIPORT + '/columns';
+             //check if title already exist
+             fetch(url)
+             .then((response) => response.text())
+             .then((responseText) => {
+                let data = JSON.parse(responseText);
+                for (let i = 0 ; i < data.length ; ++i){
+                    if (data[i].title == title) {
+                        alert('Title already exist');
+                        throw new Error("Title already exist");
+                    }
+                }
+                //post to the server
+                fetch(url, {
+                    method: 'post',
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({'title': title})
+                }).then(res=>res.json())
+                .then(res => console.log(res));
+            })
+             .catch((error) => {
+                console.error(error);
+            });
+             window.location.reload(true);
+         }
+     });
+ </script>
